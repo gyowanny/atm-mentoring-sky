@@ -34,9 +34,9 @@ public class BalanceHandler implements Handler {
                 .route(cardNumber -> !cardValidator.isValid(cardNumber), ignored -> {
                     ctx.getResponse().status(403).send("Invalid card number");
                 })
-                .map(cardNumber -> accountDao.findAccountByCard(cardNumber))
+                .flatMap(cardNumber -> accountDao.findAccountByCard(cardNumber))
                 .onNull(() -> ctx.getResponse().status(404).send("Card not found"))
-                .map(account -> balanceService.getBalance(account))
+                .flatMap(account -> balanceService.getBalance(account))
                 .then(balance -> {
                     ctx.getResponse().status(200);
                     ctx.render(json(balance));

@@ -5,7 +5,6 @@ import com.atm.api.model.Account;
 import com.atm.api.model.Balance;
 import com.atm.api.service.BalanceService;
 import com.atm.api.validator.CardValidator;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -16,17 +15,14 @@ import ratpack.test.handling.HandlingResult;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static ratpack.test.handling.RequestFixture.requestFixture;
 
-public class BalanceHandlerTest {
+public class WithdrawHandlerTest {
 
-    private BalanceHandler instance;
-
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private WithdrawHandler instance;
 
     @Mock
     private AccountDao accountDao;
@@ -40,14 +36,13 @@ public class BalanceHandlerTest {
     @Before
     public void setUp() throws Exception {
         initMocks(this);
-        instance = new BalanceHandler(accountDao, balanceService, cardValidator);
+        instance = new WithdrawHandler(accountDao, balanceService, cardValidator);
     }
 
     @Test
-    public void returns200AndTheBalanceForTheGivenBranchAndAccountAssignedToTheCardNumber() throws Exception {
+    public void shouldWithdrawAndReturnTheUpdatedBalance() throws Exception {
         // Given
-        final String cardNumber = "aValidCardNumber";
-        final String requestBody = createRequestBody(cardNumber);
+        final String cardNumber = "cardNumber";
 
         final Account expectedAccount = new Account();
         expectedAccount.setBranchCode("branchCode");
@@ -55,71 +50,74 @@ public class BalanceHandlerTest {
 
         final Balance expectedBalance = new Balance();
         expectedBalance.setAccount(expectedAccount);
-        expectedBalance.setValue(Double.valueOf(100));
+        expectedBalance.setValue(Double.valueOf(80));
 
-        when(accountDao.findAccountByCard(any())).thenReturn(Promise.value(expectedAccount));
-        when(balanceService.getBalance(any())).thenReturn(Promise.value(expectedBalance));
         when(cardValidator.isValid(any())).thenReturn(true);
+        when(accountDao.findAccountByCard(any())).thenReturn(Promise.value(expectedAccount));
+        when(balanceService.withdraw(any(), any())).thenReturn(Promise.value(expectedBalance));
 
         // When
         HandlingResult handlingResult = requestFixture()
-                .method("GET")
-                .body(requestBody, "application/json")
+                .body(createRequestBody("cardNumber"), "application/json")
                 .handle(instance);
 
         // Then
-        verify(cardValidator).isValid(eq(cardNumber));
         verify(accountDao).findAccountByCard(eq(cardNumber));
-        verify(balanceService).getBalance(eq(expectedAccount));
+        verify(balanceService).withdraw(eq(expectedAccount), eq(Double.valueOf("20.00")));
         assertThat(handlingResult.getStatus().getCode()).isEqualTo(200);
-        Balance actualBalance = (Balance) handlingResult.rendered(DefaultJsonRender.class).getObject();
-        assertThat(actualBalance).isEqualTo(expectedBalance);
+        Balance balance = (Balance) handlingResult.rendered(DefaultJsonRender.class).getObject();
+        assertThat(balance).isEqualTo(expectedBalance);
     }
 
     @Test
-    public void returns403ForInvalidCardNumber() throws Exception {
+    public void shouldReturn403ForInvalidCardNumber() throws Exception {
         // Given
         final String cardNumber = "invalidCardNumber";
-        final String requestBody = createRequestBody(cardNumber);
 
         when(cardValidator.isValid(any())).thenReturn(false);
 
         // When
         HandlingResult handlingResult = requestFixture()
-                .method("GET")
-                .body(requestBody, "application/json")
+                .body(createRequestBody("cardNumber"), "application/json")
                 .handle(instance);
 
         // Then
-        verify(cardValidator).isValid(eq(cardNumber));
-        verify(accountDao, times(0)).findAccountByCard(eq(cardNumber));
         assertThat(handlingResult.getStatus().getCode()).isEqualTo(403);
         assertThat(handlingResult.getBodyText()).isEqualTo("Invalid card number");
     }
 
     @Test
-    public void returns404WhenCardNumberIsValidButWasNotFound() throws Exception {
+    public void shouldReturn403WhenTheAvailableBalanceIsLessThanTheRequestedAmount() throws Exception {
         // Given
-        final String cardNumber = "aValidCardNumber";
-        final String requestBody = createRequestBody(cardNumber);
+        final String cardNumber = "cardNumber";
 
-        when(accountDao.findAccountByCard(any())).thenReturn(Promise.value(null));
+        final Account expectedAccount = new Account();
+        expectedAccount.setBranchCode("branchCode");
+        expectedAccount.setAccount("account");
+
+        final Balance expectedBalance = new Balance();
+        expectedBalance.setAccount(expectedAccount);
+        expectedBalance.setValue(Double.valueOf(-80));
+        expectedBalance.setMessage("Not enough funds");
+
         when(cardValidator.isValid(any())).thenReturn(true);
+        when(accountDao.findAccountByCard(any())).thenReturn(Promise.value(expectedAccount));
+        when(balanceService.withdraw(any(), any())).thenReturn(Promise.value(expectedBalance));
 
         // When
         HandlingResult handlingResult = requestFixture()
-                .method("GET")
-                .body(requestBody, "application/json")
+                .body(createRequestBody("cardNumber"), "application/json")
                 .handle(instance);
 
         // Then
-        verify(cardValidator).isValid(eq(cardNumber));
         verify(accountDao).findAccountByCard(eq(cardNumber));
-        assertThat(handlingResult.getStatus().getCode()).isEqualTo(404);
-        assertThat(handlingResult.getBodyText()).isEqualTo("Card not found");
+        verify(balanceService).withdraw(eq(expectedAccount), eq(Double.valueOf("20.00")));
+        assertThat(handlingResult.getStatus().getCode()).isEqualTo(403);
+        Balance balance = (Balance) handlingResult.rendered(DefaultJsonRender.class).getObject();
+        assertThat(balance).isEqualTo(expectedBalance);
     }
 
     private String createRequestBody(String cardNumber) {
-        return "{\"card\":\""+cardNumber+"\"}";
+        return "{\"card\":\""+cardNumber+"\",\"pin\":\"1234\",\"amount\":\"20.00\"}";
     }
 }
