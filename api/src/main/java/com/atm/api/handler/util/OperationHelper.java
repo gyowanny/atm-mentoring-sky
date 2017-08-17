@@ -9,13 +9,17 @@ import ratpack.handling.Context;
 import ratpack.http.TypedData;
 
 public final class OperationHelper {
-
-    private static final ObjectMapper mapper = new ObjectMapper();
     private static final CardValidator cardValidator = new CardValidator();
 
-    public static Promise<WithdrawRequest> parseWithdrawRequestAndValidateCardNumber(Promise<TypedData> body, Context ctx) throws Exception {
-        return body.map(bodyParsed -> mapper.readValue(bodyParsed.getBytes(), WithdrawRequest.class))
-                .route(withdrawRequest -> !cardValidator.isValid(withdrawRequest.getCard()),
-                        ignored -> ctx.getResponse().status(403).send("Invalid card number"));
+    public static Promise<WithdrawRequest> parseWithdrawRequestAndValidateCardNumber(Context ctx) throws Exception {
+        final String cardNumber = ctx.getPathTokens().get("cardNumber");
+        return ctx.parse(WithdrawRequest.class)
+                .route(withdrawRequest -> !cardValidator.isValid(cardNumber),
+                        ignored -> ctx.getResponse().status(403).send("Invalid card number"))
+                .map(withdrawRequest -> {
+                    withdrawRequest.setCard(cardNumber);
+                    return withdrawRequest;
+                });
+
     }
 }

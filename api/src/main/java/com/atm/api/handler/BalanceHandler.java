@@ -4,6 +4,7 @@ import com.atm.api.dao.AccountDao;
 import com.atm.api.service.BalanceService;
 import com.atm.api.validator.CardValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ratpack.exec.Promise;
 import ratpack.handling.Context;
 import ratpack.handling.Handler;
 
@@ -29,8 +30,7 @@ public class BalanceHandler implements Handler {
 
     @Override
     public void handle(Context ctx) throws Exception {
-        ctx.getRequest().getBody()
-                .map(body -> (String) objectMapper.readValue(body.getBytes(), HashMap.class).get("card"))
+        Promise.value(ctx.getPathTokens().get("cardNumber"))
                 .route(cardNumber -> !cardValidator.isValid(cardNumber), ignored -> {
                     ctx.getResponse().status(403).send("Invalid card number");
                 })

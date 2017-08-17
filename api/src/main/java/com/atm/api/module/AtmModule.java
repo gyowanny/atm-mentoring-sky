@@ -4,6 +4,7 @@ import com.atm.api.dao.AccountDao;
 import com.atm.api.handler.BalanceHandler;
 import com.atm.api.handler.StatementHandler;
 import com.atm.api.handler.StatusHandler;
+import com.atm.api.model.request.WithdrawRequest;
 import com.atm.api.service.BalanceService;
 import com.atm.api.validator.CardValidator;
 import com.google.inject.AbstractModule;

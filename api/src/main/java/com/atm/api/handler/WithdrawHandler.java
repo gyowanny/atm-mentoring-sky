@@ -1,11 +1,14 @@
 package com.atm.api.handler;
 
 import com.atm.api.dao.AccountDao;
+import com.atm.api.model.Balance;
+import com.atm.api.model.request.WithdrawRequest;
 import com.atm.api.service.BalanceService;
 import com.atm.api.validator.CardValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ratpack.handling.Context;
 import ratpack.handling.Handler;
+import ratpack.jackson.JsonRender;
 
 import javax.inject.Inject;
 
@@ -28,24 +31,35 @@ public class WithdrawHandler implements Handler{
 
     @Override
     public void handle(Context ctx) throws Exception {
-        parseWithdrawRequestAndValidateCardNumber(ctx.getRequest().getBody(), ctx)
-                .flatMap(withdrawRequest ->
-                    accountDao.findAccountByCard(withdrawRequest.getCard())
-                            .map(account -> {
-                                withdrawRequest.setAccount(account);
-                                return withdrawRequest;
-                            })
-                )
-                .flatMap(withdrawRequest ->
-                        balanceService.withdraw(withdrawRequest.getAccount(), Double.valueOf(withdrawRequest.getAmount())))
-                .route(balance -> balance.containsMessage(), balance -> {
-                    ctx.getResponse().status(403);
-                    ctx.render(json(balance));
+        ctx.parse(WithdrawRequest.class)
+                .map(withdrawRequest -> {
+                    withdrawRequest.setCard(ctx.getPathTokens().get("cardNumber"));
+                    return withdrawRequest;
                 })
-                .then(balance -> {
-                    ctx.getResponse().status(200);
-                    ctx.render(json(balance));
-                });
+                .route(withdrawRequest -> !cardValidator.isValid(withdrawRequest.getCard()), invalidWithdrawRequest -> {
+                    ctx.getResponse().status(403).send("Invalid card number");
+                })
+                .flatMap(withdrawRequest -> accountDao.findAccountByCard(withdrawRequest.getCard())
+                        .map(account -> {
+                            withdrawRequest.setAccount(account);
+                            return withdrawRequest;
+                        })
+                )
+                .then(withdrawRequest ->
+                        balanceService.withdraw(withdrawRequest.getAccount(), Double.valueOf(withdrawRequest.getAmount()))
+                                .route(balance -> balance.containsMessage(), balance -> {
+                                    renderResponse(ctx, 403, balance);
+                                })
+                                .then(balance -> {
+                                    renderResponse(ctx, 200, balance);
+                                })
+                );
+
+    }
+
+    private static void renderResponse(Context ctx, int code, Balance balance) {
+        ctx.getResponse().status(code);
+        ctx.render(json(balance));
     }
 
 }

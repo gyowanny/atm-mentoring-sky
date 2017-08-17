@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class WithdrawRequest {
-    @JsonProperty("card") private String card;
     @JsonProperty("pin") private String pin;
     @JsonProperty("amount") private String amount;
+    @JsonIgnore private String card;
     @JsonIgnore private Account account;
 
     public WithdrawRequest() {
@@ -31,5 +31,9 @@ public class WithdrawRequest {
 
     public void setAccount(Account account) {
         this.account = account;
+    }
+
+    public void setCard(String card) {
+        this.card = card;
     }
 }

@@ -5,6 +5,7 @@ import com.atm.api.model.Account;
 import com.atm.api.model.Balance;
 import com.atm.api.service.BalanceService;
 import com.atm.api.validator.CardValidator;
+import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -58,7 +59,9 @@ public class WithdrawHandlerTest {
 
         // When
         HandlingResult handlingResult = requestFixture()
-                .body(createRequestBody("cardNumber"), "application/json")
+                .pathBinding(ImmutableMap.of("cardNumber", cardNumber))
+                .body(createRequestBody(), "application/json")
+                .timeout(60)
                 .handle(instance);
 
         // Then
@@ -78,7 +81,8 @@ public class WithdrawHandlerTest {
 
         // When
         HandlingResult handlingResult = requestFixture()
-                .body(createRequestBody("cardNumber"), "application/json")
+                .pathBinding(ImmutableMap.of("cardNumber", cardNumber))
+                .body(createRequestBody(), "application/json")
                 .handle(instance);
 
         // Then
@@ -106,7 +110,8 @@ public class WithdrawHandlerTest {
 
         // When
         HandlingResult handlingResult = requestFixture()
-                .body(createRequestBody("cardNumber"), "application/json")
+                .pathBinding(ImmutableMap.of("cardNumber", cardNumber))
+                .body(createRequestBody(), "application/json")
                 .handle(instance);
 
         // Then
@@ -117,7 +122,7 @@ public class WithdrawHandlerTest {
         assertThat(balance).isEqualTo(expectedBalance);
     }
 
-    private String createRequestBody(String cardNumber) {
-        return "{\"card\":\""+cardNumber+"\",\"pin\":\"1234\",\"amount\":\"20.00\"}";
+    private String createRequestBody() {
+        return "{\"pin\":\"1234\",\"amount\":\"20.00\"}";
     }
 }
