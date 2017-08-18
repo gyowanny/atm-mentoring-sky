@@ -27,8 +27,6 @@ public class BalanceHandlerTest {
 
     private BalanceHandler instance;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
-
     @Mock
     private AccountDao accountDao;
 
