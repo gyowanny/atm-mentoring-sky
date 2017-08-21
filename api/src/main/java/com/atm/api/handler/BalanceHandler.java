@@ -10,14 +10,10 @@ import ratpack.handling.Handler;
 
 import javax.inject.Inject;
 
-import java.util.HashMap;
-
 import static ratpack.jackson.Jackson.json;
 
 public class BalanceHandler implements Handler {
-
     private final AccountDao accountDao;
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private final BalanceService balanceService;
     private final CardValidator cardValidator;
 
@@ -30,13 +26,13 @@ public class BalanceHandler implements Handler {
 
     @Override
     public void handle(Context ctx) throws Exception {
-        Promise.value(ctx.getPathTokens().get("cardNumber"))
+        Promise.value(ctx.getAllPathTokens().get("cardNumber"))
                 .route(cardNumber -> !cardValidator.isValid(cardNumber), ignored -> {
                     ctx.getResponse().status(403).send("Invalid card number");
                 })
-                .flatMap(cardNumber -> accountDao.findAccountByCard(cardNumber))
+                .flatMap(accountDao::findAccountByCard)
                 .onNull(() -> ctx.getResponse().status(404).send("Card not found"))
-                .flatMap(account -> balanceService.getBalance(account))
+                .flatMap(balanceService::getBalance)
                 .then(balance -> {
                     ctx.getResponse().status(200);
                     ctx.render(json(balance));

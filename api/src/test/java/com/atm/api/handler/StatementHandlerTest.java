@@ -2,11 +2,9 @@ package com.atm.api.handler;
 
 import com.atm.api.dao.AccountDao;
 import com.atm.api.model.Account;
-import com.atm.api.model.Balance;
 import com.atm.api.model.Statement;
 import com.atm.api.service.BalanceService;
 import com.atm.api.validator.CardValidator;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,29 +1,39 @@
 package com.atm.api.module;
 
-import com.atm.api.dao.AccountDao;
-import com.atm.api.data.DataSet;
-import com.atm.api.handler.BalanceHandler;
-import com.atm.api.handler.StatementHandler;
-import com.atm.api.handler.StatusHandler;
-import com.atm.api.service.BalanceService;
-import com.atm.api.validator.CardValidator;
+import com.atm.api.service.ratpack.DatabaseInitService;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
+import com.google.inject.name.Names;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Properties;
 
 public class AtmModule extends AbstractModule {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AtmModule.class);
 
     @Override
     protected void configure() {
-        bind(DataSet.class).in(Scopes.SINGLETON);
+        Names.bindProperties(binder(), System.getProperties());
+        Names.bindProperties(binder(), loadAppConfig());
 
-        bind(AccountDao.class).in(Scopes.SINGLETON);
+        install(new MyBatisInternalModule());
 
-        bind(BalanceService.class).in(Scopes.SINGLETON);
+        install(new HandlersModule());
 
-        bind(CardValidator.class).in(Scopes.SINGLETON);
+        bind(DatabaseInitService.class).in(Scopes.SINGLETON);
+    }
 
-        bind(StatusHandler.class).in(Scopes.SINGLETON);
-        bind(BalanceHandler.class).in(Scopes.SINGLETON);
-        bind(StatementHandler.class).in(Scopes.SINGLETON);
+    private Properties loadAppConfig() {
+        Properties props = new Properties();
+        String configFileName = String.format("app-config-%s.properties",
+                System.getProperties().getProperty("env", "local"));
+        try {
+            props.load(AtmModule.class.getClassLoader().getResourceAsStream(configFileName));
+        } catch (Exception e) {
+            LOGGER.warn("App config file {} not found", configFileName);
+        }
+        return props;
     }
 }

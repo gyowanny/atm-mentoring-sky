@@ -17,7 +17,7 @@ public class BalanceService {
     }
 
     /**
-     * Retrives the balance of the given account.
+     * Retrieves the balance of the given account.
      * If no balance is found a balance with value ZERO is returned.
      *
      * @param account
@@ -35,7 +35,7 @@ public class BalanceService {
     }
 
     /**
-     * Takes the given amount out of the balance and return the updared balance.
+     * Takes the given amount out of the balance and return the updated balance.
      *
      * Pre-conditions:
      *
@@ -57,7 +57,7 @@ public class BalanceService {
     }
 
     /**
-     * The statement should return a list of transactions in the following format:
+     * The statement should return a list of the given account's transactions in the following format:
      *
      * date time description amount
      *

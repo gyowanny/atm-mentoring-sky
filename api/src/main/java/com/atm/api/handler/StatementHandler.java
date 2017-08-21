@@ -28,9 +28,9 @@ public class StatementHandler implements Handler {
         Promise.value(ctx.getPathTokens().get("cardNumber"))
             .route(cardNumber -> !cardValidator.isValid(cardNumber),
                     cardNumber -> ctx.getResponse().status(403).send("Invalid card number"))
-            .flatMap(cardNumber -> accountDao.findAccountByCard(cardNumber))
+            .flatMap(accountDao::findAccountByCard)
             .onNull(() -> ctx.getResponse().status(404).send("Card not found"))
-            .flatMap(account -> balanceService.getStatement(account))
+            .flatMap(balanceService::getStatement)
             .then(statement -> {
                 ctx.getResponse().status(200);
                 ctx.render(json(statement));

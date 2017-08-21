@@ -8,11 +8,9 @@ import com.atm.api.validator.CardValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ratpack.handling.Context;
 import ratpack.handling.Handler;
-import ratpack.jackson.JsonRender;
 
 import javax.inject.Inject;
 
-import static com.atm.api.handler.util.OperationHelper.parseWithdrawRequestAndValidateCardNumber;
 import static ratpack.jackson.Jackson.json;
 
 public class WithdrawHandler implements Handler{
@@ -47,7 +45,7 @@ public class WithdrawHandler implements Handler{
                 )
                 .then(withdrawRequest ->
                         balanceService.withdraw(withdrawRequest.getAccount(), Double.valueOf(withdrawRequest.getAmount()))
-                                .route(balance -> balance.containsMessage(), balance -> {
+                                .route(Balance::containsMessage, balance -> {
                                     renderResponse(ctx, 403, balance);
                                 })
                                 .then(balance -> {

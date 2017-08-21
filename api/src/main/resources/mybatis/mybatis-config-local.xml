@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <properties resource="app-config.properties">
+        <property name="local.driver" value="com.mysql.jdbc.Driver"/>
+        <property name="local.host" value="localhost"/>
+        <property name="local.port" value="3306"/>
+        <property name="local.schema" value="atm"/>
+        <property name="local.username" value="atm"/>
+        <property name="local.password" value="atm"/>
+
+        <property name="driver" value="${JDBC.driver|com.mysql.jdbc.Driver}"/>
+        <property name="host" value="${JDBC.host|localhost}"/>
+        <property name="port" value="${JDBC.port|3306}"/>
+        <property name="schema" value="${JDBC.schema|atm}"/>
+        <property name="username" value="${JDBC.username|atm}"/>
+        <property name="password" value="${JDBC.password|atm}"/>
+    </properties>
+
+    <settings>
+        <setting name="cacheEnabled" value="false" />
+        <setting name="useGeneratedKeys" value="true" />
+        <setting name="defaultExecutorType" value="REUSE" />
+    </settings>
+
+    <environments default="local">
+        <environment id="local">
+            <transactionManager type="JDBC" ></transactionManager>
+            <dataSource type="POOLED">
+                <property name="driver" value="${local.driver}" />
+                <property name="url" value="jdbc:mysql://${local.host}:${local.port}/${local.schema}" />
+                <property name="username" value="${local.username}" />
+                <property name="password" value="${local.password}" />
+            </dataSource>
+        </environment>
+
+        <environment id="prod">
+            <transactionManager type="JDBC" ></transactionManager>
+            <dataSource type="POOLED">
+                <property name="driver" value="${driver}" />
+                <property name="url" value="jdbc:mysql://${host}:${port}/${schema}" />
+                <property name="username" value="${username}" />
+                <property name="password" value="${password}" />
+            </dataSource>
+        </environment>
+    </environments>
+
+    <mappers>
+        <mapper resource="mybatis/mappers/AccountDao.xml" />
+    </mappers>
+
+</configuration>
