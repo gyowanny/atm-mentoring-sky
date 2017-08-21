@@ -1,21 +1,27 @@
 package com.atm.api.module;
 
-import com.atm.api.dao.AccountDao;
-import com.atm.api.dao.mybatis.MyBatisAccountDao;
+import com.atm.api.service.AccountService;
 import com.google.inject.*;
-import org.mybatis.guice.XMLMyBatisModule;
+import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
+import org.mybatis.guice.MyBatisModule;
+import org.mybatis.guice.datasource.builtin.PooledDataSourceProvider;
+import org.mybatis.guice.datasource.helper.JdbcHelper;
 
 import static org.apache.ibatis.io.Resources.getResourceAsReader;
 
-public class MyBatisInternalModule extends XMLMyBatisModule {
+public class MyBatisInternalModule extends MyBatisModule {
 
     @Override
     protected void initialize() {
         String env = System.getProperties().getProperty("env", "local");
-        setEnvironmentId(env);
-        setClassPathResource(String.format("mybatis/mybatis-config-%s.xml", env));
-        bindTransactionInterceptors();
-        bind(AccountDao.class).to(MyBatisAccountDao.class).in(Scopes.SINGLETON);
+        environmentId(env);
+
+        install(JdbcHelper.MySQL);
+        bindDataSourceProviderType(PooledDataSourceProvider.class);
+        bindTransactionFactoryType(JdbcTransactionFactory.class);
+        addMapperClasses("com.atm.api.dao");
+
+        bind(AccountService.class).in(Scopes.SINGLETON);
     }
 
 }

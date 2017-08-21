@@ -2,8 +2,8 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.atm.api.model.Account">
-    <select id="findByCard" resultType="com.atm.api.model.Account">
+<mapper namespace="com.atm.api.dao.AccountDao">
+    <select id="findAccountByCard" resultType="com.atm.api.model.Account">
         select * from ACCOUNT where cardNumber = #{cardNumber}
     </select>
 </mapper>

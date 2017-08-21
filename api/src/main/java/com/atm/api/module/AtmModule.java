@@ -19,7 +19,6 @@ public class AtmModule extends AbstractModule {
         Names.bindProperties(binder(), loadAppConfig());
 
         install(new MyBatisInternalModule());
-
         install(new HandlersModule());
 
         bind(DatabaseInitService.class).in(Scopes.SINGLETON);

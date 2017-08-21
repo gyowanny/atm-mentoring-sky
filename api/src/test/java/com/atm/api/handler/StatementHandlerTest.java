@@ -1,8 +1,8 @@
 package com.atm.api.handler;
 
-import com.atm.api.dao.AccountDao;
 import com.atm.api.model.Account;
 import com.atm.api.model.Statement;
+import com.atm.api.service.AccountService;
 import com.atm.api.service.BalanceService;
 import com.atm.api.validator.CardValidator;
 import com.google.common.collect.ImmutableMap;
@@ -28,7 +28,7 @@ public class StatementHandlerTest {
     private StatementHandler instance;
 
     @Mock
-    private AccountDao accountDao;
+    private AccountService accountDao;
 
     @Mock
     private BalanceService balanceService;

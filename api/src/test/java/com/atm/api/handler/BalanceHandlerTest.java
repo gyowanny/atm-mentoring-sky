@@ -1,8 +1,8 @@
 package com.atm.api.handler;
 
-import com.atm.api.dao.AccountDao;
 import com.atm.api.model.Account;
 import com.atm.api.model.Balance;
+import com.atm.api.service.AccountService;
 import com.atm.api.service.BalanceService;
 import com.atm.api.validator.CardValidator;
 import com.google.common.collect.ImmutableMap;
@@ -27,7 +27,7 @@ public class BalanceHandlerTest {
     private BalanceHandler instance;
 
     @Mock
-    private AccountDao accountDao;
+    private AccountService accountDao;
 
     @Mock
     private BalanceService balanceService;

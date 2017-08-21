@@ -1,9 +1,8 @@
 package com.atm.api.handler;
 
-import com.atm.api.dao.AccountDao;
+import com.atm.api.service.AccountService;
 import com.atm.api.service.BalanceService;
 import com.atm.api.validator.CardValidator;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import ratpack.exec.Promise;
 import ratpack.handling.Context;
 import ratpack.handling.Handler;
@@ -13,13 +12,13 @@ import javax.inject.Inject;
 import static ratpack.jackson.Jackson.json;
 
 public class BalanceHandler implements Handler {
-    private final AccountDao accountDao;
+    private final AccountService accountService;
     private final BalanceService balanceService;
     private final CardValidator cardValidator;
 
     @Inject
-    public BalanceHandler(AccountDao accountDao, BalanceService balanceService, CardValidator cardValidator) {
-        this.accountDao = accountDao;
+    public BalanceHandler(AccountService accountService, BalanceService balanceService, CardValidator cardValidator) {
+        this.accountService = accountService;
         this.balanceService = balanceService;
         this.cardValidator = cardValidator;
     }
@@ -30,7 +29,7 @@ public class BalanceHandler implements Handler {
                 .route(cardNumber -> !cardValidator.isValid(cardNumber), ignored -> {
                     ctx.getResponse().status(403).send("Invalid card number");
                 })
-                .flatMap(accountDao::findAccountByCard)
+                .flatMap(accountService::findAccountByCard)
                 .onNull(() -> ctx.getResponse().status(404).send("Card not found"))
                 .flatMap(balanceService::getBalance)
                 .then(balance -> {

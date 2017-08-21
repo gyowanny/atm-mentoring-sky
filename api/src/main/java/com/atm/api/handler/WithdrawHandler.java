@@ -1,8 +1,8 @@
 package com.atm.api.handler;
 
-import com.atm.api.dao.AccountDao;
 import com.atm.api.model.Balance;
 import com.atm.api.model.request.WithdrawRequest;
+import com.atm.api.service.AccountService;
 import com.atm.api.service.BalanceService;
 import com.atm.api.validator.CardValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,13 +15,13 @@ import static ratpack.jackson.Jackson.json;
 
 public class WithdrawHandler implements Handler{
 
-    private final AccountDao accountDao;
+    private final AccountService accountDao;
     private final BalanceService balanceService;
     private final ObjectMapper mapper = new ObjectMapper();
     private final CardValidator cardValidator;
 
     @Inject
-    public WithdrawHandler(AccountDao accountDao, BalanceService balanceService, CardValidator cardValidator) {
+    public WithdrawHandler(AccountService accountDao, BalanceService balanceService, CardValidator cardValidator) {
         this.accountDao = accountDao;
         this.balanceService = balanceService;
         this.cardValidator = cardValidator;
