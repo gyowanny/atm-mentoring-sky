@@ -1,5 +1,7 @@
 package com.atm.api.module;
 
+import com.atm.api.service.AccountService;
+import com.atm.api.service.AtmTransactionLogService;
 import com.atm.api.service.ratpack.DatabaseInitService;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
@@ -19,6 +21,10 @@ public class AtmModule extends AbstractModule {
         Names.bindProperties(binder(), loadAppConfig());
 
         install(new MyBatisInternalModule());
+
+        bind(AccountService.class).in(Scopes.SINGLETON);
+        bind(AtmTransactionLogService.class).in(Scopes.SINGLETON);
+
         install(new HandlersModule());
 
         bind(DatabaseInitService.class).in(Scopes.SINGLETON);

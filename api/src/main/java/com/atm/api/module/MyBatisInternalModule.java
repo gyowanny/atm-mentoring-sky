@@ -20,8 +20,6 @@ public class MyBatisInternalModule extends MyBatisModule {
         bindDataSourceProviderType(PooledDataSourceProvider.class);
         bindTransactionFactoryType(JdbcTransactionFactory.class);
         addMapperClasses("com.atm.api.dao");
-
-        bind(AccountService.class).in(Scopes.SINGLETON);
     }
 
 }

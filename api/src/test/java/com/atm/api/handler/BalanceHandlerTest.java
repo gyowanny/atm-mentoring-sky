@@ -3,6 +3,7 @@ package com.atm.api.handler;
 import com.atm.api.model.Account;
 import com.atm.api.model.Balance;
 import com.atm.api.service.AccountService;
+import com.atm.api.service.AtmTransactionLogService;
 import com.atm.api.service.BalanceService;
 import com.atm.api.validator.CardValidator;
 import com.google.common.collect.ImmutableMap;
@@ -35,10 +36,13 @@ public class BalanceHandlerTest {
     @Mock
     private CardValidator cardValidator;
 
+    @Mock
+    private AtmTransactionLogService atmTransactionLogService;
+
     @Before
     public void setUp() throws Exception {
         initMocks(this);
-        instance = new BalanceHandler(accountDao, balanceService, cardValidator);
+        instance = new BalanceHandler(accountDao, balanceService, cardValidator, atmTransactionLogService);
     }
 
     @Test
