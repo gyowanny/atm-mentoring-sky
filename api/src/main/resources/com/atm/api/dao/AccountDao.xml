@@ -4,6 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.atm.api.dao.AccountDao">
     <select id="findAccountByCard" resultType="com.atm.api.model.Account">
-        select * from ACCOUNT where cardNumber = #{cardNumber}
+        SELECT * FROM ACCOUNT
+        WHERE cardNumber = #{cardNumber}
     </select>
 </mapper>

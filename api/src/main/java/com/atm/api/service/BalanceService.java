@@ -1,6 +1,6 @@
 package com.atm.api.service;
 
-import com.atm.api.data.DataSet;
+import com.atm.api.dao.BalanceDao;
 import com.atm.api.model.Account;
 import com.atm.api.model.Balance;
 import com.atm.api.model.Statement;
@@ -10,11 +10,11 @@ import ratpack.exec.Promise;
 import javax.inject.Inject;
 
 public class BalanceService {
-    private final DataSet dataSet;
+    private final BalanceDao balanceDao;
 
     @Inject
-    public BalanceService(DataSet dataSet) {
-        this.dataSet = dataSet;
+    public BalanceService(BalanceDao balanceDao) {
+        this.balanceDao = balanceDao;
     }
 
     /**
@@ -25,7 +25,7 @@ public class BalanceService {
      * @return A balance object
      */
     public Promise<Balance> getBalance(Account account) {
-        return Blocking.get(() -> dataSet.getBalanceDataSet().get(account))
+        return Blocking.get(() -> balanceDao.getBalance(account.getId()))
                 .mapIf(balance -> balance == null, ignored -> {
                     Balance balance = new Balance();
                     balance.setAccount(account);

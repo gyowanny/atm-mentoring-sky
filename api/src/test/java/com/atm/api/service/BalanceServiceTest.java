@@ -1,9 +1,8 @@
 package com.atm.api.service;
 
-import com.atm.api.data.DataSet;
+import com.atm.api.dao.BalanceDao;
 import com.atm.api.model.Account;
 import com.atm.api.model.Balance;
-import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -13,6 +12,7 @@ import ratpack.test.exec.ExecHarness;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -21,7 +21,7 @@ public class BalanceServiceTest {
     private BalanceService instance;
 
     @Mock
-    private DataSet dataSet;
+    private BalanceDao balanceDao;
 
     private Map<Account, Balance> balanceMap;
     private Account account;
@@ -29,7 +29,7 @@ public class BalanceServiceTest {
     @Before
     public void setUp() throws Exception {
         initMocks(this);
-        instance = new BalanceService(dataSet);
+        instance = new BalanceService(balanceDao);
 
         account = new Account();
         account.setAccount("123456");
@@ -43,9 +43,7 @@ public class BalanceServiceTest {
         expectedBalance.setAccount(account);
         expectedBalance.setValue(20d);
 
-        balanceMap = ImmutableMap.of(account, expectedBalance);
-
-        when(dataSet.getBalanceDataSet()).thenReturn(balanceMap);
+        when(balanceDao.getBalance(any())).thenReturn(expectedBalance);
 
         // When
         executeAndAssertBalance(expectedBalance);
@@ -58,10 +56,6 @@ public class BalanceServiceTest {
         expectedBalance.setAccount(account);
         expectedBalance.setValue(0d);
 
-        balanceMap = ImmutableMap.of();
-
-        when(dataSet.getBalanceDataSet()).thenReturn(balanceMap);
-
         // When
         executeAndAssertBalance(expectedBalance);
     }
@@ -69,7 +63,7 @@ public class BalanceServiceTest {
     private void executeAndAssertBalance(Balance expectedBalance) throws Exception {
         try (ExecHarness harness = ExecHarness.harness()) {
             ExecResult<Balance> result = harness.yield(execution -> instance.getBalance(account));
-            verify(dataSet).getBalanceDataSet();
+            verify(balanceDao).getBalance(account.getId());
             assertThat(result.getValue()).isEqualTo(expectedBalance);
         }
     }
